@@ -86,10 +86,8 @@ impl PathAndQuery {
                         //
                         // Allowed: 0x21 / 0x24 - 0x3B / 0x3D / 0x3F - 0x7E
                         #[rustfmt::skip]
-                        0x21 |
-                        0x24..=0x3B |
-                        0x3D |
-                        0x3F..=0x7E => {}
+                        0x21 | 0x22 | // add " support for query string
+                        0x24..=0x7E => {} //add < and > support for query string
 
                         0x7F..=0xFF => {
                             is_maybe_not_utf8 = true;
