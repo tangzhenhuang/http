@@ -131,7 +131,8 @@ impl StatusCode {
     pub fn as_str(&self) -> &str {
         let origin = self.0.get();
         if origin < 100 || origin > 999 {
-            return origin.to_string().as_str()
+            let origin = Box::new(origin.to_string());
+            return origin.leak()
         }
         let offset = (origin - 100) as usize;
         let offset = offset * 3;
