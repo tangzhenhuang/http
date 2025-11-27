@@ -129,7 +129,11 @@ impl StatusCode {
     /// ```
     #[inline]
     pub fn as_str(&self) -> &str {
-        let offset = (self.0.get() - 100) as usize;
+        let origin = self.0.get();
+        if origin < 100 || origin > 999 {
+            return origin.to_string().as_str()
+        }
+        let offset = (origin - 100) as usize;
         let offset = offset * 3;
 
         // Invariant: self has checked range [100, 999] and CODE_DIGITS is
