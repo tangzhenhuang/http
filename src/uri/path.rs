@@ -47,10 +47,8 @@ impl PathAndQuery {
                     // percent-encoded, then error.
                     #[rustfmt::skip]
                     0x21 |
-                    0x24..=0x3B |
-                    0x3D |
-                    0x40..=0x5F |
-                    0x61..=0x7A |
+                    0x24..=0x3E |
+                    0x40..=0x7A |
                     0x7C |
                     0x7E => {}
 
