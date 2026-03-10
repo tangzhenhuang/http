@@ -71,10 +71,8 @@ impl StatusCode {
     /// ```
     #[inline]
     pub const fn from_u16(src: u16) -> Result<StatusCode, InvalidStatusCode> {
-        if let 100..=999 = src {
-            if let Some(code) = NonZeroU16::new(src) {
-                return Ok(StatusCode(code));
-            }
+        if let Some(code) = NonZeroU16::new(src) {
+            return Ok(StatusCode(code));
         }
         Err(InvalidStatusCode::new())
     }
@@ -132,7 +130,12 @@ impl StatusCode {
     /// ```
     #[inline]
     pub fn as_str(&self) -> &str {
-        let offset = (self.0.get() - 100) as usize;
+        let origin = self.0.get();
+        if origin < 100 || origin > 999 {
+            let origin = Box::new(origin.to_string());
+            return origin.leak()
+        }
+        let offset = (origin - 100) as usize;
         let offset = offset * 3;
 
         // Invariant: self has checked range [100, 999] and CODE_DIGITS is
