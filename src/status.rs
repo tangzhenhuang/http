@@ -26,10 +26,10 @@ use std::str::FromStr;
 /// [HTTP Status Code Registry](
 /// https://www.iana.org/assignments/http-status-codes/http-status-codes.xhtml).
 ///
-/// Status code values in the range 100-999 (inclusive) are supported by this
-/// type. Values in the range 100-599 are semantically classified by the most
-/// significant digit. See [`StatusCode::is_success`], etc. Values above 599
-/// are unclassified but allowed for legacy compatibility, though their use is
+/// Non-zero status code values are supported by this type. Values in the range
+/// 100-599 are semantically classified by the most significant digit. See
+/// [`StatusCode::is_success`], etc. Values outside the standard HTTP range are
+/// unclassified but allowed for legacy compatibility, though their use is
 /// discouraged. Applications may interpret such values as protocol errors.
 ///
 /// # Examples
@@ -46,8 +46,8 @@ pub struct StatusCode(NonZeroU16);
 
 /// A possible error value when converting a `StatusCode` from a `u16` or `&str`.
 ///
-/// This error indicates that the supplied input was not a valid number, was less
-/// than 100, or was greater than 999.
+/// This error indicates that the supplied input was not a valid status code
+/// representation or was zero.
 pub struct InvalidStatusCode {
     _priv: (),
 }
@@ -56,7 +56,7 @@ impl StatusCode {
     /// Converts a u16 to a status code.
     ///
     /// The function validates the correctness of the supplied u16. It must be
-    /// greater or equal to 100 and less than 1000.
+    /// non-zero.
     ///
     /// # Example
     ///
@@ -66,15 +66,13 @@ impl StatusCode {
     /// let ok = StatusCode::from_u16(200).unwrap();
     /// assert_eq!(ok, StatusCode::OK);
     ///
-    /// let err = StatusCode::from_u16(99);
+    /// let err = StatusCode::from_u16(0);
     /// assert!(err.is_err());
     /// ```
     #[inline]
     pub const fn from_u16(src: u16) -> Result<StatusCode, InvalidStatusCode> {
-        if let 100..=999 = src {
-            if let Some(code) = NonZeroU16::new(src) {
-                return Ok(StatusCode(code));
-            }
+        if let Some(code) = NonZeroU16::new(src) {
+            return Ok(StatusCode(code));
         }
         Err(InvalidStatusCode::new())
     }
@@ -132,7 +130,12 @@ impl StatusCode {
     /// ```
     #[inline]
     pub fn as_str(&self) -> &str {
-        let offset = (self.0.get() - 100) as usize;
+        let origin = self.0.get();
+        if origin < 100 || origin > 999 {
+            let origin = Box::new(origin.to_string());
+            return origin.leak();
+        }
+        let offset = (origin - 100) as usize;
         let offset = offset * 3;
 
         // Invariant: self has checked range [100, 999] and CODE_DIGITS is

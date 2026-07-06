@@ -447,10 +447,8 @@ const fn scan_path_and_query(bytes: &[u8]) -> Result<Scanned, ErrorKind> {
             // percent-encoded, then error.
             #[rustfmt::skip]
             0x21 |
-            0x24..=0x3B |
-            0x3D |
-            0x40..=0x5F |
-            0x61..=0x7A |
+            0x24..=0x3E |
+            0x40..=0x7A |
             0x7C |
             0x7E => {}
 
@@ -488,8 +486,8 @@ const fn scan_path_and_query(bytes: &[u8]) -> Result<Scanned, ErrorKind> {
                 // Allowed: 0x21 / 0x24 - 0x3B / 0x3D / 0x3F - 0x7E
                 #[rustfmt::skip]
                 0x21 |
-                0x24..=0x3B |
-                0x3D |
+                0x22 |
+                0x24..=0x3E |
                 0x3F..=0x7E => {}
 
                 0x80..=0xFF => {
@@ -615,6 +613,16 @@ mod tests {
         assert_eq!("/aa%2", pq("/aa%2").path());
         assert_eq!("/aa%2", pq("/aa%2?r=1").path());
         assert_eq!("qr=%3", pq("/a/b?qr=%3").query().unwrap());
+    }
+
+    #[test]
+    fn allows_linkerx_extra_path_chars() {
+        assert_eq!("/<>`", pq("/<>`").path());
+    }
+
+    #[test]
+    fn allows_linkerx_extra_query_chars() {
+        assert_eq!(Some(r#""<>"#), pq(r#"/?"<>"#).query());
     }
 
     #[test]

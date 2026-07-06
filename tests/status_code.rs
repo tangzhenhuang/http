@@ -23,6 +23,20 @@ fn equates_with_u16() {
 }
 
 #[test]
+fn from_u16_accepts_nonzero_values_outside_http_range() {
+    for code in [1u16, 99, 1000, u16::MAX] {
+        let status = StatusCode::from_u16(code).unwrap();
+        assert_eq!(status.as_u16(), code);
+        assert_eq!(status.as_str(), code.to_string());
+    }
+}
+
+#[test]
+fn from_u16_rejects_zero() {
+    assert!(StatusCode::from_u16(0).is_err());
+}
+
+#[test]
 fn roundtrip() {
     for s in 100..1000 {
         let sstr = s.to_string();

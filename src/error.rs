@@ -144,7 +144,7 @@ mod tests {
 
     #[test]
     fn inner_error_is_invalid_status_code() {
-        if let Err(e) = status::StatusCode::from_u16(6666) {
+        if let Err(e) = status::StatusCode::from_u16(0) {
             let err: Error = e.into();
             let ie = err.get_ref();
             assert!(!ie.is::<header::InvalidHeaderValue>());
